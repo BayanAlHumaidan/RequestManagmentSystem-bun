@@ -6,7 +6,7 @@ import {createDbSchema,readCSV, processCSVData, printAllTables } from "./functio
 
 const db = new Database("db.sqlite");
 
-const SamplefilePath = "./Sample.csv"
+const SamplefilePath = "./Data/Sample.csv"
 
 
 
@@ -30,4 +30,5 @@ function main(filePath) {
 }
 
 main(SamplefilePath);
+
 
