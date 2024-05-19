@@ -62,26 +62,52 @@ export function createDbSchema(db: Database) {
     }
 }
 
-export function numOfRecords(db: Database) {
-    const tables = ['Requests', 'NewLicenseRequests', 'AccountRequests', 'InspectionRequests', 'NewActivityRequests', 'StampLicenseRequests'];
 
-    tables.forEach(tableName => {
-        const result = db.exec(`SELECT COUNT(*) FROM ${tableName}`)
-        console.log(`${tableName}: ${result}`)
-    })
+export async function saveUploadedFile(file: File, uploadDir: String) {
+    const filePath = `${uploadDir}/${file.name}`;
+    await Bun.write(filePath, file); 
+    return filePath;
 }
 
-export function processCSVData(db: Database, csvData) {
+export function processCSVData(db: Database, csvData,recordCounts) {
+    const failedInputs: { objectId: any; error: string; }[] = [];
+
     csvData.forEach(row => {
         try {
             // Insert into Requests table
             insertDataIntoRequestsTable(db, row.RequestID, row.RequestType, row.RequestStatus);
 
+            // Update record count based on type
+            switch (row.RequestType) {
+                case 1:
+                    recordCounts.newLicenseRequests++;
+                    break;
+                case 2:
+                    recordCounts.accountRequests++;
+                    break;
+                case 3:
+                    recordCounts.inspectionRequests++;
+                    break;
+                case 4:
+                    recordCounts.newActivityRequests++;
+                    break;
+                case 5:
+                    recordCounts.stampLicenseRequests++;
+                    break;
+                default:
+                    console.log("Unknown Request Type:", row.RequestType);
+                    break;
+            }
+
             // Insert into type-specific table
             insertDataIntoTypeSpecificTable(db, row.RequestID, row.RequestType, row.RequestData);
         } catch (e) {
             console.error(`Failed to process row with RequestID ${row.RequestID}: ${e.message}`);
+            failedInputs.push({ objectId: row.RequestID, error: e.message });
+
         }
+        return failedInputs;
+
     });
 }
 export function readCSV(filePath: PathOrFileDescriptor) {
@@ -100,7 +126,7 @@ export function readCSV(filePath: PathOrFileDescriptor) {
             console.error(`Failed to read or process CSV file: An unknown error occurred`);
         }
 
-        return []; // Return an empty array 
+        return []; 
     }
 }
 
@@ -124,7 +150,7 @@ function processRow(row) {
         } else {
             console.error(`Error parsing JSON for RequestID An unknown error occurred`);
         }
-
+        console.log(obj)
         obj.RequestData = "";
     }
     return obj;

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Uploaded Requests Summary</title>
+</head>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const summaryId = new URLSearchParams(window.location.search).get('summaryId');
+    
+      fetch(`/summary/${summaryId}`)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('totalTime').textContent = `Total Processing Time: ${data.totalTime} ms`;
+          document.getElementById('newLicenseRequests').textContent = data.recordCounts.newLicenseRequests;
+          document.getElementById('accountRequests').textContent = data.recordCounts.accountRequests;
+          document.getElementById('inspectionRequests').textContent = data.recordCounts.inspectionRequests;
+          document.getElementById('newActivityRequests').textContent = data.recordCounts.newActivityRequests;
+          document.getElementById('stampLicenseRequests').textContent = data.recordCounts.newLicenseRequests;
+        })
+        .catch(error => console.error('Error fetching the data:', error));
+    });
+    </script>
+    
+<body>
+    <h1>Uploaded Requests Summary</h1>
+    <div id="totalTime">Total Processing Time: <span></span></div>
+    <div id="recordCounts">
+        <h2>Record Counts:</h2>
+        <ul>
+            <li>New License Requests: <span id="newLicenseRequests"></span></li>
+            <li>Account Requests: <span id="accountRequests"></span></li>
+            <li>Inspection Requests: <span id="inspectionRequests"></span></li>
+            <li>New Activity Requests: <span id="newActivityRequests"></span></li>
+            <li>Stamp License Requests: <span id="stampLicenseRequests"></span></li>
+        </ul>
+    </div>
+
+</body>
+</html>
